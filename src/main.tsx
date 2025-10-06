@@ -1,8 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
-import { TodoParent } from './components/TodoParent.tsx'
 import { Box } from '@mui/material'
+import { MainMenu } from './components/MainMenu.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -15,11 +15,11 @@ createRoot(document.getElementById('root')!).render(
         height: '100%',
         bgcolor: 'white', // 背景色
         color: 'black',      // 文字色
-        zIndex: 1000,
+        zIndex: 800,
         p: 2,
       }}
     >
-      <TodoParent />
+      <MainMenu />
     </Box>
   </StrictMode>,
 )

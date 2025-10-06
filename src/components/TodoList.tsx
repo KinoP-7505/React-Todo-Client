@@ -1,10 +1,11 @@
-import { IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
-import type { TodoItem, TodoListProps } from "./TodoTypes";
+import { Checkbox, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import type { TodoItem, TodoListProps } from "../util/TodoTypes";
 import EditIcon from '@mui/icons-material/Edit';
+import { format } from "date-fns";
 
 // Todo一覧コンポーネント
 export const TodoList: React.FC<TodoListProps> = ({
-  todoList, onEditTodo
+  todoList, onEditTodo, onChangeTodoComp
 }) => {
 
   return (
@@ -28,6 +29,7 @@ export const TodoList: React.FC<TodoListProps> = ({
                   <TodoLine key={`linekey_${idx}`}
                     todo={todo}
                     onEdit={() => onEditTodo(todo)}
+                    onChangeComp={() => onChangeTodoComp(todo)}
                   />
                 </>
               ))
@@ -44,34 +46,40 @@ type propsTodoline = {
   key: string
   todo: TodoItem,
   onEdit: () => void;
+  onChangeComp: () => void;
 }
 
 // 一覧行コンポーネント
-const TodoLine = ({ key, todo, onEdit }: propsTodoline) => {
+const TodoLine = ({ key, todo, onEdit, onChangeComp }: propsTodoline) => {
 
   // todoの表示日付選択
   const viewDateConversion = (item: TodoItem) => {
-    // 完了日が有る場合、表示日付＝完了日
-    if (item.completeDate) {
-      return item.completeDate
-    } else if (item.updateDate) {
-      // 更新日が有る場合、表示日付＝更新日
-      return item.updateDate
+    let dateNum = item.createdAt; // 作成日
+    // 更新日が有る場合、表示日付＝更新日
+    if (item.updatedAt > 0) {
+      dateNum = item.updatedAt
     }
-    // 表示日付＝作成日
-    return item.createDate
+    // 数値を表示日付に変換
+    const date = new Date(dateNum);
+    const formattedDate = format(date, 'yy/MM/dd HH:mm:ss');
+    return formattedDate;
+  }
+
+  const isChecked = (data: number) => {
+    return data > 0 ? true : false
   }
 
   return (
     <>
       <TableRow key={key}>
-        <TableCell align="center">{todo.id}</TableCell>
-        <TableCell align="left">{todo.todo}</TableCell>
+        <TableCell align="center">{todo.todoId}</TableCell>
+        <TableCell align="left">{todo.todoText}</TableCell>
         <TableCell align="left">{viewDateConversion(todo)}</TableCell>
         <TableCell align="center">
           <IconButton aria-label="edit" onClick={onEdit}>
             <EditIcon />
           </IconButton>
+          <Checkbox checked={isChecked(todo.compleateAt)} onChange={onChangeComp} />
         </TableCell>
       </TableRow>
     </>

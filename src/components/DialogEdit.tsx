@@ -1,7 +1,6 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
-import type { DialogEditProps, TodoItem } from "./TodoTypes";
+import type { DialogEditProps, TodoItem } from "../util/TodoTypes";
 import { useEffect, useState } from "react";
-import { utilDate } from "./util";
 import { DialogConfirm } from "./DialogConfirm";
 
 export const DialogEdit: React.FC<DialogEditProps> = ({
@@ -16,15 +15,14 @@ export const DialogEdit: React.FC<DialogEditProps> = ({
   useEffect(() => {
     if (isOpen) {
       // 変更前テキストを代入
-      setText(todo.todo)
+      setText(todo.todoText)
     }
   }, [isOpen])
 
   // todoのtextを更新したtodoオブジェクトを返す
   const updateTodo = (txt: string) => {
     const returnTodo: TodoItem = JSON.parse(JSON.stringify(todo));
-    returnTodo.todo = txt
-    returnTodo.updateDate = utilDate.nowDate()
+    returnTodo.todoText = txt
     return returnTodo
   }
 

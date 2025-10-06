@@ -1,5 +1,5 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
-import type { DialogConfirmProps } from "./TodoTypes";
+import type { DialogConfirmProps } from "../util/TodoTypes";
 
 // 確認ダイアログ
 export const DialogConfirm: React.FC<DialogConfirmProps> = ({
