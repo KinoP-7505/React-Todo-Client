@@ -3,7 +3,7 @@ import { useState } from "react"
 import type { LoginProps } from "../util/TodoTypes";
 import { useAxiosStore } from "../util/AxiosStore";
 
-export const Login: React.FC<LoginProps> = ({ isAuthSuccess }) => {
+export const Login: React.FC<LoginProps> = ({ }) => {
   const title = 'ログイン画面'
   const [userId, setUserId] = useState<string>("");
   const [pass, setPass] = useState<string>("");

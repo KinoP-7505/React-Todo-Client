@@ -35,12 +35,12 @@ export type DialogConfirmProps = {
 
 // Todo親Props
 export type TodoParentProps = {
-  handleLogout: () => void; // ログインチェック処理
+  // handleLogout: () => void; // ログインチェック処理
 }
 
 // Login画面Props
 export type LoginProps = {
-  isAuthSuccess: (isAuth: boolean) => void; // ログイン状態
+  // isAuthSuccess: (isAuth: boolean) => void; // ログイン状態
 }
 
 // 空のTodoItem

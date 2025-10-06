@@ -6,7 +6,7 @@ import { Button, Grid, TextField } from "@mui/material";
 import { DialogEdit } from "./DialogEdit";
 import { useAxiosStore } from "../util/AxiosStore";
 
-export const TodoParent: React.FC<TodoParentProps> = ({ handleLogout }) => {
+export const TodoParent: React.FC<TodoParentProps> = ({ }) => {
   const [inputText, setInputText] = useState<string>(''); // テキスト入力値
   const [todoList, setTodoList] = useState<TodoItem[]>([]);
   // const [index, setIndex] = useState<number>(0);
