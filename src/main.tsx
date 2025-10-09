@@ -13,9 +13,9 @@ createRoot(document.getElementById('root')!).render(
         left: 0,           // 画面の左端から0の位置
         width: '100%',
         height: '100%',
-        bgcolor: 'white', // 背景色
+        bgcolor: 'cornsilk', // 背景色
         color: 'black',      // 文字色
-        zIndex: 800,
+        zIndex: 850,
         p: 2,
       }}
     >

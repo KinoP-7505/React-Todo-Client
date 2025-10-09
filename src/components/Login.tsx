@@ -25,9 +25,6 @@ export const Login: React.FC<LoginProps> = ({ }) => {
     <>
       <Grid container spacing={2} sx={{ margin: 3, maxWidth: 600 }}>
         <Grid size={12}>
-          <h2>{title}</h2>
-        </Grid>
-        <Grid size={12}>
           <TextField id="todo-input" label="ユーザーID" variant="standard"
             sx={{ width: 200 }}
             onChange={(e) => {

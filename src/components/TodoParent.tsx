@@ -14,20 +14,13 @@ export const TodoParent: React.FC<TodoParentProps> = ({ }) => {
 
   const [isOpne, setIsOpne] = useState<boolean>(false); // DialogEdit状態（開閉）
   const [editTodo, setEditTodo] = useState<TodoItem>(newTodo); // dialogEditの編集対象Todo
-  const [response, setResponse] = useState<any>();
 
   const store = useAxiosStore();
 
   // Todo更新
   const updateTodo = async (todo: TodoItem) => {
-    // ログイン中の場合呼出し
-    // if (isLogin) {
-    // reqを省略
     console.log(`updateTodo todoid= ${todo.todoId}, todoText= ${todo.todoText}`)
-    // await axiosUtil.api.post(axiosUtil.updateTodo, { todo }).then(
-    //   res => setResponse(res.data)
-    // )
-    // }
+    store.updateTodo({ todo });
   }
 
   // Todoを追加
@@ -35,19 +28,13 @@ export const TodoParent: React.FC<TodoParentProps> = ({ }) => {
     const todo = newTodo();
     todo.todoText = text
 
-    // req {todo: todo}
     store.addTodo({ todo });
   }
 
   // 完了を更新
   const updateCompleteAt = async (todo: TodoItem) => {
-    // if (isLogin) {
-    //   // reqを省略
-    //   console.log(`updateCompleteAt todoid= ${todo.todoId}`)
-    // await axiosUtil.api.post(axiosUtil.updateCompleteAt, { todo: todo }).then(
-    //   res => setResponse(res.data)
-    // )
-    // }
+    console.log(`updateTodo todoid= ${todo.todoId}, compleateAt= ${todo.compleateAt}`)
+    store.updateCompleteAt({ todo });
   }
 
   // リストからidxに紐づくTodoを削除
@@ -72,21 +59,9 @@ export const TodoParent: React.FC<TodoParentProps> = ({ }) => {
 
   }, [store.stateTodoList])
 
-  useEffect(() => {
-    if (response !== '') {
-      if (response === 'delete') {
-        alert(`Todoを削除`);
-      }
-      store.getList();
-    }
-  }, [response])
-
   return (
     <>
-      <Grid container spacing={2} sx={{ margin: 3, maxWidth: 600 }}>
-        <Grid size={12}>
-          <h3>{title}</h3>
-        </Grid>
+      <Grid container spacing={2} sx={{ margin: 3, maxWidth: 850 }}>
         <Grid size={12}>
           <TextField id="todo-input" label="Todo入力" variant="standard"
             sx={{ width: 400 }}
