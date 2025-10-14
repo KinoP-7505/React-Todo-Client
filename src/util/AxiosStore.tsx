@@ -7,18 +7,26 @@ const url = {
   getList: '/getTodoList',
   addTodo: '/addTodo',
   updateTodo: '/updateTodo',
-  updateCompleteAt: '/updateCompleteAt',
+  sendCompleteList: '/sendCompleteList',
   deleteTodoEp: '/deleteTodoEp',
   login: '/login',
 }
 
+// 画面ID
+export const screenId = {
+  login: 0,
+  todoNow: 1,
+  todoComp: 2,
+}
+
+// Storeのインターフェース
 type AxiosState = {
-  // login(req: { userName: string; password: string; }): unknown;
   isAuth: boolean; // 認証済み
+  screenState: number; // 画面
+  setScreenState: (screenId: number) => void;
   isLoading: boolean; // リクエスト中
   todoList: TodoItem[]; // 受信TodoList
   stateTodoList: string; // 状態：受信TodoList
-  loginTitle: string; // ログイン中タイトル
   userId: number; // ユーザId
   viewUserName: string; // 表示ユーザ名
   setUserId: (id: number) => void; // ユーザ情報の格納
@@ -33,7 +41,7 @@ type AxiosState = {
   getList: () => void;
   addTodo: (req: any) => void; // axiosAPI todo追加
   updateTodo: (req: any) => void; // axiosAPI todo更新
-  updateCompleteAt: (req: any) => void; // axiosAPI todo完了
+  sendCompleteList: (req: any) => void; // axiosAPI 完了todo送信
 }
 
 // tokenを付与したapiをインスタンス
@@ -54,10 +62,11 @@ const api = () => {
   })
 }
 
+// Axios通信系のStore
 export const useAxiosStore = create<AxiosState>()((set, get) => ({
   isAuth: false,
+  screenState: 0,
   isLoading: false,
-  loginTitle: 'Todo一覧',
   setIsLoading: (isLoading) => set(_state => ({ isLoading: isLoading })),
   // メニュータイトル
   getMenuTitle: () => {
@@ -66,11 +75,10 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
     }
     // 未ログイン時
     return 'ログイン画面';
-
   },
   todoList: [],
   stateTodoList: '',
-  setTodoList: (list) => set(_state => ({ todoList: list })),
+  setTodoList: (list) => set(() => ({ todoList: list })),
   // 受信todoListをセット、状態をNewに更新
   setNewTodoList: (list: TodoItem[]) => set(() => ({
     todoList: list,
@@ -78,12 +86,13 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
   })),
   // ユーザ情報 登録
   viewUserName: '',
-  userId: 0,
+  userId: screenId.login, // 初期値はLogin画面
   setUserId: (id) => set(() => ({ userId: id })),
   setViewUserName: (name) => set(() => ({ viewUserName: name })),
   // 状態を初期化
   initStateTodoList: () => set(() => ({ stateTodoList: '' })),
-  setIsAuth: (auth) => set(_state => ({ isAuth: auth })),
+  setIsAuth: (auth) => set(() => ({ isAuth: auth })),
+  setScreenState: (screen: number) => set(() => ({ screenState: screen })),
   // ログイン
   login: async (req: any) => {
     // ロード中であれば処理しない
@@ -98,6 +107,8 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
     try {
       await api().post(url.login, req).then(res => {
         if (res.data) {
+          // sessionStorage.setItem('authToken', token); // セット
+          // sessionStorage.getItem('authToken'); // ゲット
           // セッションストレージにトークンをセット
           sessionStorage.setItem('authToken', res.data.jwtToken); // セット
           isAuth = true; // 認証成功
@@ -116,6 +127,7 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
       // 状態のセット
       get().setIsLoading(false);
       get().setIsAuth(isAuth);
+      get().setScreenState(screenId.todoNow);
       get().setUserId(userId);
       get().setViewUserName(viewUserName);
     }
@@ -131,13 +143,14 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
     let list: TodoItem[] = [];
     try {
       await api().get(url.getList).then(res => {
-
         if (res.data && res.data.todoList) {
-          console.log(res.data);
-          console.log(res.data.todoList);
-          // return res.data.todoList
-          // 受信Todoリストを格納
-          list = res.data.todoList;
+          // 受信Todoリストを格納、React管理用プロパティを初期化
+          list = res.data.todoList.map((item: TodoItem) => {
+            return {
+              ...item,
+              isStatus1: false, // 状態管理1
+            }
+          });
         }
       })
     } finally {
@@ -154,7 +167,7 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
         return get().getList();
       })
     } catch (e) {
-
+      // エラー処理
     }
   },
   // Todo更新
@@ -165,21 +178,19 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
         return get().getList();
       })
     } catch (e) {
-
+      // エラー処理
     }
   },
-
-  // updateCompleteAt
   // Todo完了
-  updateCompleteAt: async (req) => {
+  sendCompleteList: async (req) => {
     try {
-      await api().post(url.updateCompleteAt, req).then(_res => {
+      await api().post(url.sendCompleteList, req).then(_res => {
         // 画面とサーバの同期は取れている想定であるが、念のため更新
         // （Promiseチェーン：成功した場合、リストを更新）
         return get().getList();
       })
     } catch (e) {
-
+      // エラー処理
     }
   },
 

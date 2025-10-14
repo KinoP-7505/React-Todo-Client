@@ -1,10 +1,8 @@
 import { Button, Grid, TextField } from "@mui/material"
 import { useState } from "react"
-import type { LoginProps } from "../util/TodoTypes";
 import { useAxiosStore } from "../util/AxiosStore";
 
-export const Login: React.FC<LoginProps> = ({ }) => {
-  const title = 'ログイン画面'
+export const Login: React.FC = () => {
   const [userId, setUserId] = useState<string>("");
   const [pass, setPass] = useState<string>("");
   const store = useAxiosStore();
