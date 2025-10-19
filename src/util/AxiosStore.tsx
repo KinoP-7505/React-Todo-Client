@@ -5,10 +5,11 @@ import axios from "axios";
 const baseUrl = 'http://127.0.0.1:8080';
 const url = {
   getList: '/getTodoList',
+  getListComp: '/getTodoListComp',
   addTodo: '/addTodo',
   updateTodo: '/updateTodo',
   sendCompleteList: '/sendCompleteList',
-  deleteTodoEp: '/deleteTodoEp',
+  deleteTodo: '/deleteTodo',
   login: '/login',
 }
 
@@ -38,10 +39,12 @@ type AxiosState = {
   initStateTodoList: () => void; // 状態：受信TodoListを初期化
   setIsAuth: (auth: boolean) => void; // 認証状態を格納
   login: (req: any) => void;
-  getList: () => void;
+  getList: (operation: string) => void;
+  // getListComp: () => void;
   addTodo: (req: any) => void; // axiosAPI todo追加
   updateTodo: (req: any) => void; // axiosAPI todo更新
   sendCompleteList: (req: any) => void; // axiosAPI 完了todo送信
+  deleteTodo: (req: any) => void; // axiosAPI todo削除
 }
 
 // tokenを付与したapiをインスタンス
@@ -133,16 +136,26 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
     }
   },
   // API getList
-  getList: async () => {
+  getList: async (operation: string) => {
     // ロード中であれば処理しない
     if (get().isLoading) {
       return;
     }
     get().setIsLoading(true); // ロード中にセット
 
+    let endpoint = '';
+    switch (operation) {
+      case 'now':
+        endpoint = url.getList
+        break;
+      case 'comp':
+        endpoint = url.getListComp
+        break;
+    }
+
     let list: TodoItem[] = [];
     try {
-      await api().get(url.getList).then(res => {
+      await api().get(endpoint).then(res => {
         if (res.data && res.data.todoList) {
           // 受信Todoリストを格納、React管理用プロパティを初期化
           list = res.data.todoList.map((item: TodoItem) => {
@@ -159,12 +172,13 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
     // 取得できなれければ、空の配列
     get().setNewTodoList(list);
   },
+
   // Todo追加
   addTodo: async (req) => {
     try {
       await api().post(url.addTodo, req).then(_res => {
         // （Promiseチェーン：成功した場合、リストを更新）
-        return get().getList();
+        return get().getList('now');
       })
     } catch (e) {
       // エラー処理
@@ -175,7 +189,7 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
     try {
       await api().post(url.updateTodo, req).then(_res => {
         // （Promiseチェーン：成功した場合、リストを更新）
-        return get().getList();
+        return get().getList('now');
       })
     } catch (e) {
       // エラー処理
@@ -183,11 +197,27 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
   },
   // Todo完了
   sendCompleteList: async (req) => {
+
     try {
       await api().post(url.sendCompleteList, req).then(_res => {
         // 画面とサーバの同期は取れている想定であるが、念のため更新
         // （Promiseチェーン：成功した場合、リストを更新）
-        return get().getList();
+        if (req.operation === 'set') {
+          return get().getList('now');
+        } else if (req.operation === 'remove') {
+          return get().getList('comp');
+        }
+      })
+    } catch (e) {
+      // エラー処理
+    }
+  },
+  // Todo削除（完了画面での削除）
+  deleteTodo: async (req) => {
+    try {
+      await api().post(url.deleteTodo, req).then(_res => {
+        // （Promiseチェーン：成功した場合、リストを更新）
+        return get().getList('comp');
       })
     } catch (e) {
       // エラー処理

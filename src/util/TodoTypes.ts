@@ -13,8 +13,29 @@ export type TodoItem = {
 // TodoList画面Props
 export type TodoListProps = {
   todoList: TodoItem[];
+  operationComponent: any; // 操作欄のコンポーネント
+  // operation:操作、data:コールバックデータ
+  operationCallback: (operation: string, data: TodoItem) => void; // 汎用コールバック
+};
+
+export type OperationComponentProps = {
+  todo: TodoItem,
+  // operation:操作、data:コールバックデータ
+  operationCallback: (operation: string, data: TodoItem) => void; // 汎用コールバック
+}
+
+
+// TodoList画面Props
+export type TodoListNowProps = {
+  todoList: TodoItem[];
   onEditTodo: (editTodo: TodoItem) => void;
-  onChangeTodoComp: (editTodo: TodoItem) => void;
+  onChangeCheck1: (editTodo: TodoItem) => void;
+};
+
+// TodoList完了画面Props
+export type TodoListCompProps = {
+  todoList: TodoItem[];
+  onChangeCheck1: (editTodo: TodoItem) => void;
 };
 
 // 編集ダイアログProps

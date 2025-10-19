@@ -1,17 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
-import { newTodo, type TodoItem } from "../util/TodoTypes";
-import { TodoList } from "./TodoList";
-import { Button, Grid, TextField } from "@mui/material";
+import { newTodo, type OperationComponentProps, type TodoItem } from "../util/TodoTypes";
+import { Button, Checkbox, Grid, IconButton, TextField } from "@mui/material";
 import { DialogEdit } from "./DialogEdit";
 import { useAxiosStore } from "../util/AxiosStore";
 import CreateIcon from '@mui/icons-material/Create';
 import SendIcon from '@mui/icons-material/Send';
+import { OperationNow, ListTodo } from "./ListTodo";
 
 /**
  * 現在のTodo画面
  * @returns JSX
  */
-export const TodoNow: React.FC = ({ }) => {
+export const TodoNow: React.FC = () => {
   const [inputText, setInputText] = useState<string>(''); // テキスト入力値
   const [todoList, setTodoList] = useState<TodoItem[]>([]);
   const [isDisabledSendBtn, setIsDisabledSendBtn] = useState<boolean>(true);
@@ -48,16 +48,13 @@ export const TodoNow: React.FC = ({ }) => {
     })
     // 完了対象が１つ以上ある場合API実行
     if (todoIdList.length > 0) {
-      store.sendCompleteList({ todoIdList });
+      const req = {
+        operation: 'set',
+        todoIdList,
+      }
+      store.sendCompleteList(req);
     }
   }
-
-  // リストからidxに紐づくTodoを削除
-  // const deleteTodo = (todo: TodoItem) => {
-  //   const delId = todo.todoId;
-  //   const workList = todoList.filter(t => t.todoId !== delId)
-  //   setTodoList(workList);
-  // };
 
   // useCallback
   const stableEditTodo = useCallback((editTodo: TodoItem) => {
@@ -90,7 +87,7 @@ export const TodoNow: React.FC = ({ }) => {
 
   // 初回1回呼出し
   useEffect(() => {
-    store.getList();
+    store.getList('now');
   }, [])
 
   // todoListの状態監視
@@ -133,9 +130,19 @@ export const TodoNow: React.FC = ({ }) => {
           </Button>
         </Grid>
         <Grid size={12}>
-          <TodoList todoList={todoList}
-            onEditTodo={stableEditTodo} // callback化
-            onChangeTodoComp={stableChangeTodoComp} // callback化
+          <ListTodo
+            todoList={todoList}
+            operationComponent={OperationNow}
+            operationCallback={(operation, todo) => {
+              switch (operation) {
+                case 'edit':
+                  stableEditTodo(todo);
+                  break;
+                case 'checkbox':
+                  stableChangeTodoComp(todo)
+                  break;
+              }
+            }}
           />
         </Grid>
       </Grid>
@@ -159,3 +166,4 @@ export const TodoNow: React.FC = ({ }) => {
     </>
   );
 }
+
