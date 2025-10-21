@@ -48,8 +48,7 @@ export const TodoComp: React.FC = () => {
     if (userConfirmed) {
       console.log('Step 3: ✅ Yesが選択。削除処理を続行します。');
       // 削除処理実行
-
-
+      store.deleteTodo({ todo });
 
     } else {
       console.log('Step 3: ❌ Noが選択。処理を中断。');

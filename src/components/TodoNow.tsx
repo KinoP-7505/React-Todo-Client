@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { newTodo, type OperationComponentProps, type TodoItem } from "../util/TodoTypes";
-import { Button, Checkbox, Grid, IconButton, TextField } from "@mui/material";
+import { Alert, Button, Checkbox, Grid, IconButton, Snackbar, TextField } from "@mui/material";
 import { DialogEdit } from "./DialogEdit";
 import { useAxiosStore } from "../util/AxiosStore";
 import CreateIcon from '@mui/icons-material/Create';
 import SendIcon from '@mui/icons-material/Send';
 import { OperationNow, ListTodo } from "./ListTodo";
+import { useAppStore } from "../util/AppStore";
 
 /**
  * 現在のTodo画面
@@ -18,8 +19,10 @@ export const TodoNow: React.FC = () => {
 
   const [isOpne, setIsOpne] = useState<boolean>(false); // DialogEdit状態（開閉）
   const [editTodo, setEditTodo] = useState<TodoItem>(newTodo); // dialogEditの編集対象Todo
+  const [isOpenAlert, setIsOpenAlert] = useState<boolean>(false); // アラート開閉
 
   const store = useAxiosStore();
+  const appStore = useAppStore();
 
   // Todo更新
   const updateTodo = async (todo: TodoItem) => {
@@ -92,13 +95,15 @@ export const TodoNow: React.FC = () => {
 
   // todoListの状態監視
   useEffect(() => {
-    console.log('useEffect [store.stateTodoList]', todoList); // 👈 ここで確認
     // 新しいTodoListを受信したとき
     if (store.stateTodoList === 'new') {
-      console.log('new onChangeTodoComp store.todoList:', store.todoList); // 👈 ここで確認
-
       setTodoList(store.todoList); // 格納
       store.initStateTodoList(); // 初期化
+      setInputText(''); // Todo入力欄初期化
+
+      appStore.openNotification('success', 'Todoを登録しました。');
+      // appStore
+      // appStore.setIsNotificationOpen(true); // アラート表示
     }
 
   }, [store.stateTodoList])
@@ -114,10 +119,7 @@ export const TodoNow: React.FC = () => {
             }}
             value={inputText} />
           <Button variant="contained" startIcon={<CreateIcon />}
-            onClick={() => {
-              // addTodo(inputText)
-              console.log('onClick todoList:', todoList); // 👈 ここで確認
-            }}
+            onClick={() => addTodo(inputText)}
           >
             登録
           </Button>
@@ -145,9 +147,9 @@ export const TodoNow: React.FC = () => {
             }}
           />
         </Grid>
-      </Grid>
+      </Grid >
       {/* 編集ダイアログ */}
-      <DialogEdit
+      < DialogEdit
         todo={editTodo} isOpen={isOpne}
         onClose={() => {
           setEditTodo(newTodo);
@@ -157,12 +159,10 @@ export const TodoNow: React.FC = () => {
           updateTodo(todo);
           setIsOpne(false);
         }}
-        onDelete={(todo) => {
-          // deleteTodo(todo);
-          setIsOpne(false);
-        }
-        }
       />
+      <Snackbar open={isOpenAlert} autoHideDuration={3000} onClose={() => setIsOpenAlert(false)}>
+        <Alert severity="success">Todoを登録しました。</Alert>
+      </Snackbar >
     </>
   );
 }

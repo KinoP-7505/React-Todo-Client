@@ -1,14 +1,13 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
-import type { DialogEditProps, TodoItem } from "../util/TodoTypes";
+import { type DialogEditProps, type TodoItem } from "../util/TodoTypes";
 import { useEffect, useState } from "react";
 import { DialogConfirm } from "./DialogConfirm";
 
 export const DialogEdit: React.FC<DialogEditProps> = ({
-  todo, isOpen, onClose, onUpdate, onDelete
+  todo, isOpen, onClose, onUpdate
 }) => {
   // 編集文字列
   const [text, setText] = useState<string>('');
-
   const [isOpenConfirm, setIsOpenConfirm] = useState<boolean>(false); // Dialog状態（開閉）
 
   // isOpenが更新された時に1回実行する
@@ -54,12 +53,12 @@ export const DialogEdit: React.FC<DialogEditProps> = ({
         <DialogActions>
           <Button onClick={onClose}>Cancel</Button>
           <Button onClick={() => onUpdate(updateTodo(text))}>更新</Button>
-          <Button onClick={() => setIsOpenConfirm(true)}>削除</Button>
+          {/* <Button onClick={() => setIsOpenConfirm(true)}>削除</Button> */}
         </DialogActions>
       </Dialog >
 
       {/* 削除確認 */}
-      <DialogConfirm
+      {/* <DialogConfirm
         isOpen={isOpenConfirm} content="削除します。"
         onClose={() => setIsOpenConfirm(false)}
         onConfirm={(confirm) => {
@@ -68,7 +67,7 @@ export const DialogEdit: React.FC<DialogEditProps> = ({
           }
           setIsOpenConfirm(false)
         }}
-      />
+      /> */}
     </>
   );
 }

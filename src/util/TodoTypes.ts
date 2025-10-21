@@ -44,7 +44,7 @@ export type DialogEditProps = {
   isOpen: boolean;
   onClose: () => void
   onUpdate: (todo: TodoItem) => void;
-  onDelete: (todo: TodoItem) => void;
+  // onDelete: (todo: TodoItem) => void;
 };
 
 // 確認ダイアログProps

@@ -1,12 +1,16 @@
 import { Login } from "./Login";
 import { TodoNow } from "./TodoNow";
 import { useAxiosStore } from "../util/AxiosStore";
-import { Grid, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import { Alert, Grid, Snackbar, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { useEffect, useState } from "react";
 import { TodoComp } from "./TodoComp";
+import { useAppStore } from "../util/AppStore";
+import { ViewNotification } from "./ViewNotification";
 export const MainMenu: React.FC = () => {
   // ログイン状態はAxiosStoreで管理
   const store = useAxiosStore();
+  const appStore = useAppStore();
+
   const [nowAlignment, setNowAlignment] = useState<string>('now');
 
   const ToggleBtnMenu = () => {
@@ -69,9 +73,14 @@ export const MainMenu: React.FC = () => {
           {store.screenState === 1 && <TodoNow />}
           {store.screenState === 2 && <TodoComp />}
         </Grid>
-
       </Grid>
-
+      {/* 通知表示 */}
+      <ViewNotification
+        isOpen={appStore.isNotificationOpen}
+        message={appStore.notificationMessage}
+        mode={appStore.notificationMode}
+        handleClose={() => appStore.setIsNotificationOpen(false)}
+      />
     </>
   );
 }
