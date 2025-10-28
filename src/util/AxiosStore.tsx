@@ -25,7 +25,12 @@ type AxiosState = {
   isAuth: boolean; // 認証済み
   screenState: number; // 画面
   setScreenState: (screenId: number) => void;
+  clearErrorMessage: () => void;
+  setLogoutState: (errorMessage: string) => void; // ログアウト状態セット
   isLoading: boolean; // リクエスト中
+  successMessage: string; // 成功メッセージ
+  setSuccessMessage: (message: string) => void; // 成功メッセージセッター
+  errorMessage: string; // エラーメッセージ
   todoList: TodoItem[]; // 受信TodoList
   stateTodoList: string; // 状態：受信TodoList
   userId: number; // ユーザId
@@ -49,6 +54,8 @@ type AxiosState = {
 
 // tokenを付与したapiをインスタンス
 const api = () => {
+  // const axiosStore = useAxiosStore();
+  // const appStore = useAppStore();
   // セッションストレージからtokenを取得
   const token = sessionStorage.getItem('authToken');
   // スペルミスがあった！！！
@@ -56,13 +63,60 @@ const api = () => {
   const auth = `Bearer ${token}`;
   console.log(auth)
 
-  return axios.create({
+  // Axiosクリエイト
+  const instanceAxios = axios.create({
     baseURL: baseUrl,
     headers: {
       Authorization: auth,
       'Content-Type': 'application/json;charset=UTF-8',
     }
   })
+
+  // インターセプターの設定（共通エラー処理）
+  instanceAxios.interceptors.response.use(
+    // 成功時(2xx) responseを返す
+    (response) => {
+      return response;
+    },
+    // エラー時（2xxステータス以外）
+    (error) => {
+      const { response } = error;
+      let errorMessage = ''; // 
+
+      // responseが有る場合
+      if (response) {
+        switch (response.status) {
+          case 401: // 認証エラー
+            errorMessage = `${response.status}:認証エラー: トークンの期限切れ、または、無効な認証情報です。`;
+            break;
+          case 403: // 権限エラー
+            errorMessage = `${response.status}:権限エラー: アクセス権限がありません。`;
+            break;
+          case 500: // サーバーエラー
+            errorMessage = `${response.status}:サーバーエラー: 予期せぬエラーが発生しました。`;
+            break;
+          default:
+            errorMessage = `${response.status}:HTTPエラー ${response.status}: ${response.data.message || '不明なエラー'}`;
+        }
+
+      } else if (error.request) {
+        // リクエストが有る場合
+        errorMessage = `${response.status}:ネットワークエラー : サーバから応答なし'}`;
+      } else {
+        // リクエスト設定エラー
+        errorMessage = `${response.status}:リクエスト設定エラー : ${error.message}'}`;
+      }
+
+      console.error(errorMessage);
+      logoutAction(errorMessage); // 状態をログアウトに設定
+
+      // 呼び出し元のTry-Catchでエラーを補足する
+      return Promise.reject({ error, errorMessage });
+    },
+  )
+
+  // カスタムAxios返却
+  return instanceAxios;
 }
 
 // Axios通信系のStore
@@ -70,6 +124,9 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
   isAuth: false,
   screenState: 0,
   isLoading: false,
+  successMessage: '',
+  setSuccessMessage: (message: string) => set(() => ({ successMessage: message })),
+  errorMessage: '',
   setIsLoading: (isLoading) => set(_state => ({ isLoading: isLoading })),
   // メニュータイトル
   getMenuTitle: () => {
@@ -96,6 +153,14 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
   initStateTodoList: () => set(() => ({ stateTodoList: '' })),
   setIsAuth: (auth) => set(() => ({ isAuth: auth })),
   setScreenState: (screen: number) => set(() => ({ screenState: screen })),
+  clearErrorMessage: () => set(() => ({ errorMessage: '' })),
+  setLogoutState: (errorMessage: string) => set(() => ({
+    // // エラー発生時は未ログイン状態にパラメータを設定、ログイン画面に遷移する
+    isAuth: false, // 認証なし状態
+    screenState: 0, // ログイン画面遷移
+    errorMessage, // エラーメッセージ設定
+  })),
+
   // ログイン
   login: async (req: any) => {
     // ロード中であれば処理しない
@@ -124,7 +189,6 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
       })
     } catch (error) {
       // ネットワークエラー、4xx/5xx HTTPエラーなど、API呼び出しで例外が発生した場合
-      console.error("ログインAPI呼び出し中にエラー:", error);
       sessionStorage.setItem('authToken', '');
     } finally {
       // 状態のセット
@@ -166,6 +230,8 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
           });
         }
       })
+    } catch (error) {
+      // エラー発生
     } finally {
       get().setIsLoading(false); // 通常にセット
     }
@@ -178,6 +244,7 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
     try {
       await api().post(url.addTodo, req).then(_res => {
         // （Promiseチェーン：成功した場合、リストを更新）
+        get().setSuccessMessage('Todoを登録しました。');
         return get().getList('now');
       })
     } catch (e) {
@@ -225,4 +292,9 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
   },
 
 }))
+
+// ログアウト状態
+export const logoutAction = (errorMessage: string) => {
+  useAxiosStore.getState().setLogoutState(errorMessage);
+}
 

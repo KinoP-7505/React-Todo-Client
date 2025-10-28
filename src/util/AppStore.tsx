@@ -13,7 +13,7 @@ type AppState = {
   openNotification: (mode: string, message: string) => void;
 }
 
-export const useAppStore = create<AppState>()((set, get) => ({
+export const useAppStore = create<AppState>()((set, _get) => ({
   isNotificationOpen: false,
   setIsNotificationOpen: (flg) => set(() => ({ isNotificationOpen: flg })),
   notificationMessage: 'message',

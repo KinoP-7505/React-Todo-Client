@@ -144,11 +144,12 @@ export const TodoComp: React.FC = () => {
       <DialogConfirm
         isOpen={customComfirm.isDialogOpen}
         content="削除します。"
-        onClose={customComfirm.handleClose}
+        onClose={() => customComfirm.handleConfirm(false)}
         onConfirm={(confirm: number) => {
           console.log(`DialogConfirm onConfirm confirm = ${confirm}`);
-          // yes=1
-          confirm === 1 ? customComfirm.handleConfirm() : customComfirm.handleClose()
+          // confirm=1の場合、Yes（true）
+          customComfirm.handleConfirm(confirm === 1)
+          // confirm === 1 ? customComfirm.handleConfirm() : customComfirm.handleClose()
         }}
       />
     </>

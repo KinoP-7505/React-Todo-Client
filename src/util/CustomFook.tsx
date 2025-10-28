@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 type ResolveFunction = (value: boolean) => void;
 
@@ -17,31 +17,39 @@ export const useConfirm = () => {
       // rejectは通常不要（キャンセル＝falseで解決）
     });
   }, []);
-
-  // ダイアログの「はい(承認)」ボタンが押されたときの処理
-  const handleConfirm = useCallback(() => {
+  const handleConfirm = useCallback((confirm: boolean) => {
     setIsDialogOpen(false); // ダイアログを非表示
     if (resolvePromise) {
-      resolvePromise(true); // Promiseを 'true' で解決
+      resolvePromise(confirm); // Promiseを 'true' で解決
       setResolvePromise(null);
     }
   }, [resolvePromise]);
 
-  // ダイアログの「いいえ(キャンセル)」ボタンが押されたときの処理
-  const handleClose = useCallback(() => {
-    setIsDialogOpen(false); // ダイアログを非表示
-    if (resolvePromise) {
-      resolvePromise(false); // Promiseを 'false' で解決
-      setResolvePromise(null);
-    }
-  }, [resolvePromise]);
+
+  // // ダイアログの「はい(承認)」ボタンが押されたときの処理
+  // const handleConfirm = useCallback(() => {
+  //   setIsDialogOpen(false); // ダイアログを非表示
+  //   if (resolvePromise) {
+  //     resolvePromise(true); // Promiseを 'true' で解決
+  //     setResolvePromise(null);
+  //   }
+  // }, [resolvePromise]);
+
+  // // ダイアログの「いいえ(キャンセル)」ボタンが押されたときの処理
+  // const handleClose = useCallback(() => {
+  //   setIsDialogOpen(false); // ダイアログを非表示
+  //   if (resolvePromise) {
+  //     resolvePromise(false); // Promiseを 'false' で解決
+  //     setResolvePromise(null);
+  //   }
+  // }, [resolvePromise]);
 
   // 4. モーダルコンポーネントに渡すPropsと、表示関数を返す
   return {
     isDialogOpen,
     dialogMessage,
     showConfirm,
-    handleConfirm, // Yesの処理
-    handleClose, // No,ダイアログcloseの処理
+    handleConfirm, // Yes/Noの処理
+    // handleClose, // No,ダイアログcloseの処理
   };
 };

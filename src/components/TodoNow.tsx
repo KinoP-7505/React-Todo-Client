@@ -19,7 +19,6 @@ export const TodoNow: React.FC = () => {
 
   const [isOpne, setIsOpne] = useState<boolean>(false); // DialogEdit状態（開閉）
   const [editTodo, setEditTodo] = useState<TodoItem>(newTodo); // dialogEditの編集対象Todo
-  const [isOpenAlert, setIsOpenAlert] = useState<boolean>(false); // アラート開閉
 
   const store = useAxiosStore();
   const appStore = useAppStore();
@@ -100,13 +99,19 @@ export const TodoNow: React.FC = () => {
       setTodoList(store.todoList); // 格納
       store.initStateTodoList(); // 初期化
       setInputText(''); // Todo入力欄初期化
-
-      appStore.openNotification('success', 'Todoを登録しました。');
-      // appStore
-      // appStore.setIsNotificationOpen(true); // アラート表示
+      console.log(`effect todoNow:  store.stateTodoList=${store.stateTodoList}  store.todoList.len= ${store.todoList.length}`)
     }
 
   }, [store.stateTodoList])
+
+  // 通信成功時メッセージ（本来はID,textで作成が良い）
+  useEffect(() => {
+    if (store.successMessage.length > 0) {
+      appStore.openNotification('success', store.successMessage);
+      store.setSuccessMessage(''); // メッセージクリア
+    }
+  }, [store.successMessage])
+
 
   return (
     <>
@@ -160,9 +165,6 @@ export const TodoNow: React.FC = () => {
           setIsOpne(false);
         }}
       />
-      <Snackbar open={isOpenAlert} autoHideDuration={3000} onClose={() => setIsOpenAlert(false)}>
-        <Alert severity="success">Todoを登録しました。</Alert>
-      </Snackbar >
     </>
   );
 }

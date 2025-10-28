@@ -1,7 +1,7 @@
 import { Login } from "./Login";
 import { TodoNow } from "./TodoNow";
 import { useAxiosStore } from "../util/AxiosStore";
-import { Alert, Grid, Snackbar, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import { Grid, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { useEffect, useState } from "react";
 import { TodoComp } from "./TodoComp";
 import { useAppStore } from "../util/AppStore";
@@ -13,8 +13,23 @@ export const MainMenu: React.FC = () => {
 
   const [nowAlignment, setNowAlignment] = useState<string>('now');
 
-  const ToggleBtnMenu = () => {
+  // ユーザログインチェック
+  // ログイン後の有効期間が切れているかをチェックする
 
+  useEffect(() => {
+    // エラーメッセージがブランクではない場合（エラー発生時）
+    if (store.errorMessage.length > 0) {
+      appStore.openNotification('error', store.errorMessage);
+      // メッセージクリア
+      store.clearErrorMessage();
+      setNowAlignment('now'); // ログイン初期画面設定
+    }
+
+  }, [store.errorMessage])
+
+
+  // トグルボタン生成
+  const ToggleBtnMenu = () => {
     const handleChange = (alignment: any) => {
       console.log(`alignment: ${alignment}`)
       // 画面変更
