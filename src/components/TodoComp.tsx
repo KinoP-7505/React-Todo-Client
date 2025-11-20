@@ -42,7 +42,7 @@ export const TodoComp: React.FC = () => {
     console.log('--- 処理開始: Step 1 ---');
 
     // 🚀 Step 2: ダイアログを表示し、ユーザーの選択を待機（処理が中断される）
-    const userConfirmed = await customComfirm.showConfirm('削除確認（yes/no）');
+    const userConfirmed = await customComfirm.showConfirm('select', '選択', '削除確認（yes/no）');
 
     // 💡 Step 3: ユーザーの選択（true/false）に応じて処理を分岐
     if (userConfirmed) {
@@ -143,7 +143,9 @@ export const TodoComp: React.FC = () => {
       {/* 削除確認 */}
       <DialogConfirm
         isOpen={customComfirm.isDialogOpen}
-        content="削除します。"
+        mode={customComfirm.dialogMode}
+        title={customComfirm.dialogTitle}
+        content={customComfirm.dialogMessage}
         onClose={() => customComfirm.handleConfirm(false)}
         onConfirm={(confirm: number) => {
           console.log(`DialogConfirm onConfirm confirm = ${confirm}`);

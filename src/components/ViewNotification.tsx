@@ -14,16 +14,17 @@ export const ViewNotification: React.FC<PropsNotification> = ({ isOpen, message,
   // const [mode, setMode] = useState<string>(''); // Alertパターン
 
   const viewAlert = (mode: string) => {
-    if (mode === "switch") {
+    if (mode === "success") {
       return <Alert severity="success">{message}</Alert>
-
+    } else if (mode === "error") {
+      return <Alert severity="error">{message}</Alert>
     }
     return <Alert severity="success">{message}</Alert>
   }
 
   return (
     <>
-      <Snackbar open={isOpen} autoHideDuration={3000} onClose={handleClose}>
+      <Snackbar open={isOpen} autoHideDuration={5000} onClose={handleClose}>
         {viewAlert(mode)}
       </Snackbar >
     </>

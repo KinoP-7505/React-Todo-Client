@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { newTodo, type OperationComponentProps, type TodoItem } from "../util/TodoTypes";
-import { Alert, Button, Checkbox, Grid, IconButton, Snackbar, TextField } from "@mui/material";
+import { newTodo, type TodoItem } from "../util/TodoTypes";
+import { Button, Grid, TextField } from "@mui/material";
 import { DialogEdit } from "./DialogEdit";
 import { useAxiosStore } from "../util/AxiosStore";
 import CreateIcon from '@mui/icons-material/Create';
 import SendIcon from '@mui/icons-material/Send';
 import { OperationNow, ListTodo } from "./ListTodo";
 import { useAppStore } from "../util/AppStore";
+import { useConfirm } from "../util/CustomFook";
 
 /**
  * 現在のTodo画面
@@ -26,7 +27,19 @@ export const TodoNow: React.FC = () => {
   // Todo更新
   const updateTodo = async (todo: TodoItem) => {
     console.log(`updateTodo todoid= ${todo.todoId}, todoText= ${todo.todoText}`)
-    store.updateTodo({ todo });
+    try {
+      await store.updateTodo({ todo });
+    } catch (error: any) {
+      console.log('updateTodo エラー', error)
+      if (error.status === 401) {
+        // 認証エラーの場合はログアウト処理
+        appStore.setIsStateTimeout(true);
+      } else {
+        // その他のエラー
+        appStore.openNotification('error', error.errorMessage);
+        store.setSuccessMessage(''); // メッセージクリア
+      }
+    }
   }
 
   // Todoを追加
@@ -34,13 +47,25 @@ export const TodoNow: React.FC = () => {
     const todo = newTodo();
     todo.todoText = text
 
-    store.addTodo({ todo });
+    try {
+      await store.addTodo({ todo });
+    } catch (error: any) {
+      console.log('addTodo エラー', error)
+      if (error.status === 401) {
+        // 認証エラーの場合はログアウト処理
+        appStore.setIsStateTimeout(true);
+      } else {
+        // その他のエラー
+        appStore.openNotification('error', error.errorMessage);
+        store.setSuccessMessage(''); // メッセージクリア
+      }
+    }
   }
 
   // チェックONのTODOを完了済みにする
   // 画面のチェックON、完了ボタンで完了日を設定
   // 未完了TODOは完了日なし
-  const sendComplete = () => {
+  const sendComplete = async () => {
     // todoListからisStates1===trueのtodoIdの配列を作成
     let todoIdList: number[] = []
     todoList.map(todo => {
@@ -54,7 +79,20 @@ export const TodoNow: React.FC = () => {
         operation: 'set',
         todoIdList,
       }
-      store.sendCompleteList(req);
+
+      try {
+        await store.sendCompleteList(req);
+      } catch (error: any) {
+        console.log('sendComplete エラー', error)
+        if (error.status === 401) {
+          // 認証エラーの場合はログアウト処理
+          appStore.setIsStateTimeout(true);
+        } else {
+          // その他のエラー
+          appStore.openNotification('error', error.errorMessage);
+          store.setSuccessMessage(''); // メッセージクリア
+        }
+      }
     }
   }
 
@@ -89,7 +127,19 @@ export const TodoNow: React.FC = () => {
 
   // 初回1回呼出し
   useEffect(() => {
-    store.getList('now');
+    try {
+      store.getList('now');
+    } catch (error: any) {
+      console.log('getList エラー', error)
+      if (error.status === 401) {
+        // 認証エラーの場合はログアウト処理
+        appStore.setIsStateTimeout(true);
+      } else {
+        // その他のエラー
+        appStore.openNotification('error', error.errorMessage);
+        store.setSuccessMessage(''); // メッセージクリア
+      }
+    }
   }, [])
 
   // todoListの状態監視
@@ -115,8 +165,8 @@ export const TodoNow: React.FC = () => {
 
   return (
     <>
-      <Grid container spacing={2} sx={{ margin: 3, maxWidth: 850 }}>
-        <Grid size={12}>
+      <Grid container spacing={2} sx={{ margin: 3, maxWidth: 850, height: '100hv' }}>
+        <Grid size={12} sx={{ height: 50 }}>
           <TextField id="todo-input" label="Todo入力" variant="standard"
             sx={{ width: 400 }}
             onChange={(e) => {
@@ -136,7 +186,7 @@ export const TodoNow: React.FC = () => {
             TODO完了
           </Button>
         </Grid>
-        <Grid size={12}>
+        <Grid size={12} sx={{ flexGrow: 1 }}>
           <ListTodo
             todoList={todoList}
             operationComponent={OperationNow}

@@ -44,6 +44,7 @@ type AxiosState = {
   initStateTodoList: () => void; // 状態：受信TodoListを初期化
   setIsAuth: (auth: boolean) => void; // 認証状態を格納
   login: (req: any) => void;
+  logout: () => void; // ログアウト（状態設定）
   getList: (operation: string) => void;
   // getListComp: () => void;
   addTodo: (req: any) => void; // axiosAPI todo追加
@@ -82,12 +83,20 @@ const api = () => {
     (error) => {
       const { response } = error;
       let errorMessage = ''; // 
+      let message = '';
+      console.log('response', response)
 
       // responseが有る場合
       if (response) {
+        if (response.data.messages) {
+          message = response.data.messages[0]; // 配列0を設定
+        } else if (response.data.message) {
+          message = response.data.message;
+        }
+
         switch (response.status) {
           case 401: // 認証エラー
-            errorMessage = `${response.status}:認証エラー: トークンの期限切れ、または、無効な認証情報です。`;
+            errorMessage = `${response.status}:${message}`;
             break;
           case 403: // 権限エラー
             errorMessage = `${response.status}:権限エラー: アクセス権限がありません。`;
@@ -96,7 +105,7 @@ const api = () => {
             errorMessage = `${response.status}:サーバーエラー: 予期せぬエラーが発生しました。`;
             break;
           default:
-            errorMessage = `${response.status}:HTTPエラー ${response.status}: ${response.data.message || '不明なエラー'}`;
+            errorMessage = `${response.status}:HTTPエラー ${response.status}: ${message || '不明なエラー'}`;
         }
 
       } else if (error.request) {
@@ -106,11 +115,7 @@ const api = () => {
         // リクエスト設定エラー
         errorMessage = `${response.status}:リクエスト設定エラー : ${error.message}'}`;
       }
-
-      console.error(errorMessage);
-      logoutAction(errorMessage); // 状態をログアウトに設定
-
-      // 呼び出し元のTry-Catchでエラーを補足する
+      // 呼び出し元(Axios関数)のTry-Catchでエラーを補足する
       return Promise.reject({ error, errorMessage });
     },
   )
@@ -160,21 +165,29 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
     screenState: 0, // ログイン画面遷移
     errorMessage, // エラーメッセージ設定
   })),
+  // ログアウト処理
+  logout: () => set(() => ({
+    isAuth: false, // 認証なし状態
+    screenState: 0, // ログイン画面遷移
+  })),
 
   // ログイン
   login: async (req: any) => {
     // ロード中であれば処理しない
-    if (get().isLoading) {
-      return;
-    }
+    // if (get().isLoading) {
+    //   return;
+    // } else {
+    //   get().setIsLoading(true); // ロード中にセット
+    // }
 
-    get().setIsLoading(true); // ロード中にセット
     let isAuth = false;
     let userId = 0;
     let viewUserName = '';
     try {
       await api().post(url.login, req).then(res => {
         if (res.data) {
+          console.log('login resあり')
+          console.log(res.data)
           // sessionStorage.setItem('authToken', token); // セット
           // sessionStorage.getItem('authToken'); // ゲット
           // セッションストレージにトークンをセット
@@ -182,30 +195,38 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
           isAuth = true; // 認証成功
           userId = res.data.userId;
           viewUserName = res.data.userViewName;
+          // 認証成功の場合
+          get().setScreenState(screenId.todoNow);
+          get().setUserId(userId);
+          get().setViewUserName(viewUserName);
         } else {
+          console.log('login resなし')
           // 失敗したらトークン初期化
           sessionStorage.setItem('authToken', ''); // セット
         }
       })
-    } catch (error) {
+    } catch (error: any) {
+      console.error('axioxs loginエラー:', error);
       // ネットワークエラー、4xx/5xx HTTPエラーなど、API呼び出しで例外が発生した場合
       sessionStorage.setItem('authToken', '');
+      // 呼び出し元に再スロー
+      throw error;
     } finally {
-      // 状態のセット
-      get().setIsLoading(false);
+      // ロード状態解除
+      // get().setIsLoading(false);
       get().setIsAuth(isAuth);
-      get().setScreenState(screenId.todoNow);
-      get().setUserId(userId);
-      get().setViewUserName(viewUserName);
     }
+    return isAuth;
   },
   // API getList
   getList: async (operation: string) => {
     // ロード中であれば処理しない
+    console.log('getList', get().isLoading)
     if (get().isLoading) {
       return;
+    } else {
+      get().setIsLoading(true); // ロード中にセット
     }
-    get().setIsLoading(true); // ロード中にセット
 
     let endpoint = '';
     switch (operation) {
@@ -230,8 +251,9 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
           });
         }
       })
-    } catch (error) {
-      // エラー発生
+    } catch (e) {
+      // エラー処理
+      throw e;
     } finally {
       get().setIsLoading(false); // 通常にセット
     }
@@ -248,7 +270,10 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
         return get().getList('now');
       })
     } catch (e) {
+      console.log('axios addTodo error', e);
+
       // エラー処理
+      throw e;
     }
   },
   // Todo更新
@@ -260,6 +285,7 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
       })
     } catch (e) {
       // エラー処理
+      throw e;
     }
   },
   // Todo完了
@@ -277,6 +303,7 @@ export const useAxiosStore = create<AxiosState>()((set, get) => ({
       })
     } catch (e) {
       // エラー処理
+      throw e;
     }
   },
   // Todo削除（完了画面での削除）

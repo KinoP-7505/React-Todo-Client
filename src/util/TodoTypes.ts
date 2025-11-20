@@ -42,7 +42,7 @@ export type TodoListCompProps = {
 export type DialogEditProps = {
   todo: TodoItem;
   isOpen: boolean;
-  onClose: () => void
+  onClose: () => void;
   onUpdate: (todo: TodoItem) => void;
   // onDelete: (todo: TodoItem) => void;
 };
@@ -50,8 +50,10 @@ export type DialogEditProps = {
 // 確認ダイアログProps
 export type DialogConfirmProps = {
   isOpen: boolean;
+  mode: string;
+  title: string;
   content: string;
-  onClose: () => void
+  onClose: () => void;
   onConfirm: (confirm: number) => void; // 回答を返す
 }
 

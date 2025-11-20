@@ -3,8 +3,23 @@ import type { DialogConfirmProps } from "../util/TodoTypes";
 
 // 確認ダイアログ
 export const DialogConfirm: React.FC<DialogConfirmProps> = ({
-  isOpen, content, onClose, onConfirm
+  isOpen, mode, title, content, onClose, onConfirm
 }) => {
+
+  const ButtonItem = ({ mode }: { mode: string }) => {
+    if (mode === 'confirm') {
+      return <Button onClick={() => onConfirm(0)}>確認</Button>
+    } else if (mode === 'select') {
+      return (
+        <>
+          <Button onClick={() => onConfirm(0)}>いいえ</Button>
+          <Button onClick={() => onConfirm(1)}>はい</Button>
+        </>
+      )
+    }
+    // 指定なければ確認
+    return <Button onClick={() => onConfirm(0)}>確認</Button>
+  }
 
   return (
     <Dialog open={isOpen} onClose={onClose}
@@ -19,13 +34,12 @@ export const DialogConfirm: React.FC<DialogConfirmProps> = ({
         },
       }}
     >
-      <DialogTitle>Todo編集</DialogTitle>
+      <DialogTitle>{title}</DialogTitle>
       <DialogContent>
         {content}
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => onConfirm(0)}>いいえ</Button>
-        <Button onClick={() => onConfirm(1)}>はい</Button>
+        <ButtonItem mode={mode} />
       </DialogActions>
     </Dialog >
 

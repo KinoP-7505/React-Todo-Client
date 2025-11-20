@@ -11,6 +11,8 @@ type AppState = {
   notificationMode: string;
   setNotificationMode: (mode: string) => void;
   openNotification: (mode: string, message: string) => void;
+  isStateTimeout: boolean;
+  setIsStateTimeout: (flg: boolean) => void;
 }
 
 export const useAppStore = create<AppState>()((set, _get) => ({
@@ -25,4 +27,6 @@ export const useAppStore = create<AppState>()((set, _get) => ({
     notificationMode: mode,
     notificationMessage: message,
   })),
+  isStateTimeout: false,
+  setIsStateTimeout: (flg) => set(() => ({ isStateTimeout: flg })),
 }));
